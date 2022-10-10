@@ -1,7 +1,10 @@
 package com.boycoder.kthttp.http
 
+import com.boycoder.kthttp.demo.logX
 import com.google.gson.Gson
 import com.google.gson.internal.`$Gson$Types`
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.lang.reflect.InvocationHandler
@@ -137,19 +140,40 @@ object KtHttpV1 {
             .url(url)
             .build()
         val call = okHttpClient.newCall(request)
-        return if (isKtCallReturn(method)) {
-            val genericReturnType = getTypeArgument(method)
-            KtCall<T>(call, gson, genericReturnType)
-        } else {
-            val response = call.execute()
-            val genericReturnType = method.genericReturnType
-            val json = response.body?.string()
-            gson.fromJson<Any?>(json, genericReturnType)
+
+        return when {
+            isKtCallReturn(method) -> {
+                val genericReturnType = getTypeArgument(method)
+                KtCall<T>(call, gson, genericReturnType)
+            }
+
+            isFlowReturn(method) -> {
+                flow<T> {
+                    logX("start out")
+                    val typeArgument = getTypeArgument(method)
+                    val response = okHttpClient.newCall(request).execute()
+                    val json = response.body?.string()
+                    val result = gson.fromJson<T>(json, typeArgument)
+                    logX("start emit")
+                    emit(result)
+                    logX("end emit")
+                }
+            }
+
+            else -> {
+                val response = call.execute()
+                val genericReturnType = method.genericReturnType
+                val json = response.body?.string()
+                gson.fromJson<Any?>(json, genericReturnType)
+            }
         }
     }
 
     private fun isKtCallReturn(method: Method) =
         `$Gson$Types`.getRawType(method.genericReturnType) == KtCall::class.java
+
+    private fun isFlowReturn(method: Method) =
+        `$Gson$Types`.getRawType(method.genericReturnType) == Flow::class.java
 
     /**
      * 拿到KtCall<RepoList>当中的RepoList类型
