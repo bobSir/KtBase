@@ -4,8 +4,14 @@ package com.boycoder.kthttp.http
  * created by cly on 2022/10/8
  */
 data class RepoList(
+    val `data`: Data,
+    val errorCode: Int,
+    val errorMsg: String
+)
+
+data class Data(
     val curPage: Int,
-    val datas: List<Data>,
+    val datas: List<DataX>,
     val offset: Int,
     val over: Boolean,
     val pageCount: Int,
@@ -13,7 +19,7 @@ data class RepoList(
     val total: Int
 )
 
-data class Data(
+data class DataX(
     val adminAdd: Boolean,
     val apkLink: String,
     val audit: Int,
@@ -43,10 +49,15 @@ data class Data(
     val shareUser: String,
     val superChapterId: Int,
     val superChapterName: String,
-    val tags: List<Any>,
+    val tags: List<Tag>,
     val title: String,
     val type: Int,
     val userId: Int,
     val visible: Int,
     val zan: Int
+)
+
+data class Tag(
+    val name: String,
+    val url: String
 )

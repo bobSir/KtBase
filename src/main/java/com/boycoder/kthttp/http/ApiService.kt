@@ -14,4 +14,7 @@ interface ApiService {
 
     @GET("/article/list/0/json")
     fun reposFlow(@Field("lang") cid: Int): Flow<RepoList>
+
+    @GET("/article/list/0/json")
+    suspend fun reposSuspend(@Field("lang") cid: Int): RepoList
 }

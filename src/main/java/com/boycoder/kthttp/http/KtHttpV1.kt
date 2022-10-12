@@ -5,12 +5,18 @@ import com.google.gson.Gson
 import com.google.gson.internal.`$Gson$Types`
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Proxy
+import kotlinx.coroutines.suspendCancellableCoroutine
+import okhttp3.*
+import okhttp3.Callback
+import java.io.IOException
+import java.lang.reflect.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.jvm.javaType
+import kotlin.reflect.jvm.kotlinFunction
 
 /**
  * created by cly on 2022/9/13
@@ -160,6 +166,18 @@ object KtHttpV1 {
                 }
             }
 
+            isSuspend(method) -> {
+                logX("suspend start")
+                val type = method.kotlinFunction?.returnType?.javaType ?: throw IllegalStateException()
+                val continuation = args.last() as? Continuation<T>
+                val function = KtHttpV1::class.getGenericFunction("realCall")
+
+                println("type = $type - continuation = $continuation - function = $function")
+
+                val call1 = function.call(this, call, gson, type, continuation)
+                logX("suspend end - $call1")
+            }
+
             else -> {
                 val response = call.execute()
                 val genericReturnType = method.genericReturnType
@@ -168,6 +186,43 @@ object KtHttpV1 {
             }
         }
     }
+
+    fun KClass<*>.getGenericFunction(name: String): KFunction<*> {
+        return members.single { it.name == name } as KFunction<*>
+    }
+
+    suspend fun <T : Any> realCall(call: Call, gson: Gson, typeArgument: Type): T =
+        suspendCancellableCoroutine<T> { continuation ->
+            logX("realCall start - $call")
+            call.enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    logX("realCall onFailure - $e")
+                    continuation.resumeWithException(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    logX("realCall onResponse")
+                    try {
+//                        println(response.body?.string())
+
+                        val t = gson.fromJson<T>(response.body?.string(), typeArgument)
+
+                        println("$t")
+                        continuation.resume(t)
+                    } catch (e: Exception) {
+                        continuation.resumeWithException(e)
+                    }
+                }
+
+            })
+            continuation.invokeOnCancellation {
+                call.cancel()
+            }
+        }
+
+
+    private fun isSuspend(method: Method) =
+        method.kotlinFunction?.isSuspend ?: false
 
     private fun isKtCallReturn(method: Method) =
         `$Gson$Types`.getRawType(method.genericReturnType) == KtCall::class.java

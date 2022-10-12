@@ -3,7 +3,6 @@ package com.boycoder.kthttp.http
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.suspendCoroutine
 
 /**
