@@ -1,6 +1,7 @@
 package com.boycoder.kthttp.coroutines
 
 import kotlinx.coroutines.*
+import java.util.concurrent.Executors
 
 /**
  * created by cly on 2022/10/12
@@ -19,44 +20,50 @@ fun main() {
 //        testCoroutine()
 //    }
 
-    GlobalScope.launch {
-        logX("00")
-        getUserInfo2()
-        logX("11")
-    }
-
-    GlobalScope.launch {
-        logX("22")
-        getFriendList("")
-        logX("33")
-    }
-
-    GlobalScope.launch {
-        logX("44")
-        getFeedList("", "")
-        logX("55")
-    }
-
-
 //    GlobalScope.launch {
-//        withContext(Dispatchers.IO) {
-//            logX("00")
-//            getUserInfo2()
-//            logX("11")
-//        }
-//
-//        withContext(Dispatchers.Default) {
-//            logX("22")
-//            getFriendList("")
-//            logX("33")
-//        }
-//
-//        withContext(Dispatchers.IO) {
-//            logX("44")
-//            getFeedList("", "")
-//            logX("55")
-//        }
+//        logX("00")
+//        getUserInfo2()
+//        logX("11")
 //    }
+//
+//    GlobalScope.launch {
+//        logX("22")
+//        getFriendList("")
+//        logX("33")
+//    }
+//
+//    GlobalScope.launch {
+//        logX("44")
+//        getFeedList("", "")
+//        logX("55")
+//    }
+
+
+    val singleDispatcher =
+        Executors.newSingleThreadExecutor { Thread(it, "mySingleThread").apply { isDaemon = true } }
+            .asCoroutineDispatcher()
+
+    GlobalScope.launch {
+        logX("launch start")
+
+        withContext(singleDispatcher) {
+            logX("00")
+            getUserInfo2()
+            logX("11")
+        }
+
+        withContext(Dispatchers.Default) {
+            logX("22")
+            getFriendList("")
+            logX("33")
+        }
+
+        withContext(Dispatchers.IO) {
+            logX("44")
+            getFeedList("", "")
+            logX("55")
+        }
+    }
 
     logX("end - 0")
     Thread.sleep(5000L)
@@ -97,11 +104,11 @@ suspend fun getFriendList(user: String): String {
 
 suspend fun getUserInfo2(): String {
     logX("getUserInfo2 - 0")
-    withContext(Dispatchers.IO) {
-        logX("getUserInfo2 - 1")
-        delay(1000)
-        logX("getUserInfo2 - 2")
-    }
+//    withContext(Dispatchers.IO) {
+//        logX("getUserInfo2 - 1")
+    delay(1000)
+//        logX("getUserInfo2 - 2")
+//    }
     logX("getUserInfo2 - 3")
     return "bob"
 }
