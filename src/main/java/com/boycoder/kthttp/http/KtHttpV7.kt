@@ -15,6 +15,4 @@ fun main() {
             println(repoList)
         }
     }
-
-    Thread.sleep(5000L)
 }

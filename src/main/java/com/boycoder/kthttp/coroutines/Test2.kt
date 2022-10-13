@@ -1,7 +1,6 @@
 package com.boycoder.kthttp.coroutines
 
 import kotlinx.coroutines.*
-import kotlin.math.log
 
 /**
  * created by cly on 2022/10/12
@@ -16,9 +15,48 @@ fun main() {
 //        testCoroutine()
 //    }
 
-    GlobalScope.async {
-        testCoroutine()
+//    GlobalScope.async {
+//        testCoroutine()
+//    }
+
+    GlobalScope.launch {
+        logX("00")
+        getUserInfo2()
+        logX("11")
     }
+
+    GlobalScope.launch {
+        logX("22")
+        getFriendList("")
+        logX("33")
+    }
+
+    GlobalScope.launch {
+        logX("44")
+        getFeedList("", "")
+        logX("55")
+    }
+
+
+//    GlobalScope.launch {
+//        withContext(Dispatchers.IO) {
+//            logX("00")
+//            getUserInfo2()
+//            logX("11")
+//        }
+//
+//        withContext(Dispatchers.Default) {
+//            logX("22")
+//            getFriendList("")
+//            logX("33")
+//        }
+//
+//        withContext(Dispatchers.IO) {
+//            logX("44")
+//            getFeedList("", "")
+//            logX("55")
+//        }
+//    }
 
     logX("end - 0")
     Thread.sleep(5000L)

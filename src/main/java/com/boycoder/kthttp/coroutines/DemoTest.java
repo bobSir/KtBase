@@ -1,5 +1,6 @@
 package com.boycoder.kthttp.coroutines;
 
+import com.boycoder.kthttp.highOrder.Demo;
 import kotlin.coroutines.Continuation;
 import kotlin.coroutines.CoroutineContext;
 import kotlin.coroutines.EmptyCoroutineContext;
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * created by cly on 2022/9/15
  */
 public class DemoTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         System.out.println("start");
 
@@ -26,5 +27,7 @@ public class DemoTest {
                 System.out.println(o);
             }
         });
+
+        Thread.sleep(5000);
     }
 }

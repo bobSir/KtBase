@@ -174,8 +174,11 @@ object KtHttpV1 {
 
                 println("type = $type - continuation = $continuation - function = $function")
 
-                val call1 = function.call(this, call, gson, type, continuation)
-                logX("suspend end - $call1")
+//                val func = ::temp as (Call, Gson, Type, Continuation<T>?) -> Any?
+//                func.invoke(call, gson, type, continuation)
+//                logX("suspend end - $invoke")
+                function.call(this, call, gson, type, continuation)
+//                logX("suspend end - $call1")
             }
 
             else -> {
@@ -191,12 +194,15 @@ object KtHttpV1 {
         return members.single { it.name == name } as KFunction<*>
     }
 
+    suspend fun temp(call: Call, gson: Gson, type: Type) = realCall<RepoList>(call, gson, type)
+
     suspend fun <T : Any> realCall(call: Call, gson: Gson, typeArgument: Type): T =
-        suspendCancellableCoroutine<T> { continuation ->
+        suspendCancellableCoroutine { continuation ->
             logX("realCall start - $call")
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     logX("realCall onFailure - $e")
+//                    continuation.resumeWith(Result.failure(e))
                     continuation.resumeWithException(e)
                 }
 
@@ -209,8 +215,10 @@ object KtHttpV1 {
 
                         println("$t")
                         continuation.resume(t)
+//                        continuation.resumeWith(Result.success(t))
                     } catch (e: Exception) {
                         continuation.resumeWithException(e)
+//                        continuation.resumeWith(Result.failure(e))
                     }
                 }
 
